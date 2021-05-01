@@ -1,0 +1,33 @@
+#mainContainer {
+    position: relative;
+    display: flex;
+    justify-content: center;
+}
+
+#menu {
+    display: flex;
+    height: 50px;
+}
+
+#reset {
+    font-size: 20px;
+    width: 100px;
+    height: 50px;
+    border: 2px solid brown;
+    background-color: rgb(201, 201, 201);
+}
+
+#game {
+    font-size: 50px;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    grid-column-gap: 50px;
+}
+
+.cell {
+    user-select: none;
+    border: 2px solid gray;
+    height: 100px;
+    width: 100px;
+    text-align: center;
+}
