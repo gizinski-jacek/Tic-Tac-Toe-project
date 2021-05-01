@@ -1,7 +1,9 @@
+"use strict"
+
 const gameboard = (() => {
-    const _board = Array.from({ length: 9 }, (x, i) => i);
-    const _divGame = document.querySelector('#game');
     function createBoard() {
+        const _board = Array.from({ length: 9 }, (x, i) => i);
+        const _divGame = document.querySelector('#game');
         _divGame.innerHTML = '';
         let i = 0;
         while (i < _board.length) {
@@ -48,26 +50,31 @@ const players = (() => {
 const gameController = (() => {
     let _currentPlayer = players.playerOne;
 
-    function _listenForPlay() {
+    // Listens for any click on the board.
+    function _playerMoveListeners() {
         const board = document.querySelectorAll('.cell');
         board.forEach((cell) => {
             cell.addEventListener('click', () => {
                 if (_markCell(cell)) {
-                    checkForWinner(board);
+                    _checkForWinner(board);
                     _switchPlayer();
                 }
             })
         });
     }
 
-    _listenForPlay();
+    _playerMoveListeners();
 
-    function _stopListeningForPlay() {
+    /* Removes attached event listeners without clearing the board.
+    Will probably get obsolete when I make decent CSS styling, animations and UI.
+    It's needed for now in case player clicks cancel on win confirmation box*/
+    function _stopListeningForPlayerMove() {
         const currentBoard = document.querySelector('#game');
-        boardClone = currentBoard.cloneNode(true);
+        let boardClone = currentBoard.cloneNode(true);
         currentBoard.parentNode.replaceChild(boardClone, currentBoard);
     }
 
+    // Marks cell with current players marker and color. Throws error if cell is taken.
     function _markCell(cell) {
         if (cell.textContent == '') {
             cell.textContent = _currentPlayer.marker;
@@ -79,6 +86,7 @@ const gameController = (() => {
         }
     }
 
+    // Switches current player after making move.
     function _switchPlayer() {
         if (_currentPlayer == players.playerOne) {
             _currentPlayer = players.playerTwo;
@@ -87,8 +95,9 @@ const gameController = (() => {
         }
     }
 
-    function checkForWinner(board) {
-        const array = [];
+    // Takes the current board text content from every cell and checks win conditions.
+    function _checkForWinner(board) {
+        let array = [];
         board.forEach(ele => {
             array.push(ele.textContent);
         })
@@ -96,11 +105,12 @@ const gameController = (() => {
             if (confirm(_currentPlayer.name + ' has won. Restart the game?')) {
                 resetTheGame();
             } else {
-                _stopListeningForPlay();
+                _stopListeningForPlayerMove();
             }
         }
     }
 
+    // Checks if any player got a winning row.
     function _checkRows(row) {
         for (let i = 0; i < 3; i++) {
             let arr = [];
@@ -108,177 +118,41 @@ const gameController = (() => {
                 arr.push(row[j]);
             }
             if (arr.every(mark => mark == _currentPlayer.marker)) {
-                alert(5);
+                return true;
             }
         }
     }
 
+    // Checks if any player got a winning column.
     function _checkColumns(col) {
-        for (let c = 0; c < 3; c++) {
-            if (col[c] == 'X' && col[c + 3] == 'X' && col[c + 6] == 'X') {
-                return true;
+        for (let i = 0; i < 3; i++) {
+            let arr = [];
+            for (let j = 0; j < 3; j++) {
+                arr.push(col[j * 3 + i]);
             }
-            if (col[c] == 'O' && col[c + 3] == 'O' && col[c + 6] == 'O') {
+            if (arr.every(mark => mark == _currentPlayer.marker)) {
                 return true;
             }
         }
     }
 
+    // Checks if any player got a winning diagonal.
     function _checkDiagonals(diag) {
-        if (diag[0] == 'X' && diag[4] == 'X' && diag[8] == 'X') {
-            return true;
-        }
-        if (diag[0] == 'O' && diag[4] == 'O' && diag[8] == 'O') {
-            return true;
-        }
-        if (diag[2] == 'X' && diag[4] == 'X' && diag[6] == 'X') {
-            return true;
-        }
-        if (diag[2] == 'O' && diag[4] == 'O' && diag[6] == 'O') {
-            return true;
+        let diagonalOne = [diag[0], diag[4], diag[8]];
+        let diagonalTwo = [diag[2], diag[4], diag[6]];
+        if (diagonalOne.every(mark => mark == _currentPlayer.marker || 
+            diagonalTwo.every(mark => mark == _currentPlayer.marker))) {
+                return true;
         }
     }
 
+    // Self-explanatory (or not?).
     function resetTheGame() {
         gameboard.createBoard();
-        _listenForPlay();
+        _playerMoveListeners();
     }
     
     return {
         resetTheGame,
     }
 })();
-
-
-
-
-/* Old code. Misunderstood the instructions and made everything inside 
-one single module.
-
-const game = (function() {
-    function createBoard() {
-        const gameboard = Array.from({length: 9}, (x, i) => i);
-        const divGame = document.querySelector('#game');
-        divGame.innerHTML = '';
-        let i = 0;
-        while (i < gameboard.length) {
-            const divCell = document.createElement('div');
-            divCell.setAttribute('id', i);
-            divCell.className = 'cell';
-            divGame.appendChild(divCell);
-            i++;
-        }
-    }
-
-    function CreatePlayer(name, color, marker) {
-        this.name = name;
-        this.color = color;
-        this.marker = marker;
-    }
-
-    const playerOne = new CreatePlayer('Player X', 'Red', 'X');
-    const playerTwo = new CreatePlayer('Player O', 'Blue', 'O');
-    let currentPlayer = playerOne;
-
-    function resetTheGame() {
-        createBoard();
-        listenForPlay();
-    }
-
-    const resetGame = document.querySelector('#reset');
-    resetGame.addEventListener('click', () => {
-        resetTheGame();
-    })
-
-    function listenForPlay() {
-        const board = document.querySelectorAll('.cell');
-        board.forEach((cell) => {
-            cell.addEventListener('click', () => {
-                markCell(cell);
-                checkForWinner(board);
-                switchPlayer();
-            })
-        });
-    }
-
-    function stopListeningForPlay() {
-        const board = document.querySelector('#game');
-        boardClone = board.cloneNode(true);
-        board.parentNode.replaceChild(boardClone, board);
-    }
-
-    function markCell(cell) {
-        if (cell.textContent == '') {
-            cell.textContent = currentPlayer.marker;
-            cell.style.color = currentPlayer.color;
-        } else {
-            alert('Cell is already marked, choose another one.');
-        }
-    }
-
-    function checkForWinner(board) {
-        const array = [];
-        board.forEach(ele => {
-            array.push(ele.textContent);
-        })
-        if (checkRows(array) || checkColumns(array) || checkDiagonals(array)) {
-            if (confirm(currentPlayer.name + ' has won. Restart the game?')) {
-                resetTheGame();
-            } else {
-                stopListeningForPlay();
-            }
-        }
-    }
-
-    function checkRows(row) {
-        for (let r = 0; r < 9; r += 3) {
-            if (row[r] == 'X' && row[r + 1] == 'X' && row[r + 2] == 'X') {
-                return true;
-            }
-            if (row[r] == 'O' && row[r + 1] == 'O' && row[r + 2] == 'O') {
-                return true;
-            }
-        }
-    }
-
-    function checkColumns(col) {
-        for (let c = 0; c < 3; c++) {
-            if (col[c] == 'X' && col[c + 3] == 'X' && col[c + 6] == 'X') {
-                return true;
-            }
-            if (col[c] == 'O' && col[c + 3] == 'O' && col[c + 6] == 'O') {
-                return true;
-            }
-        }
-    }
-
-    function checkDiagonals(diag) {
-        if (diag[0] == 'X' && diag[4] == 'X' && diag[8] == 'X') {
-            return true;
-        }
-        if (diag[0] == 'O' && diag[4] == 'O' && diag[8] == 'O') {
-            return true;
-        }
-        if (diag[2] == 'X' && diag[4] == 'X' && diag[6] == 'X') {
-            return true;
-        }
-        if (diag[2] == 'O' && diag[4] == 'O' && diag[6] == 'O') {
-            return true;
-        }
-    }
-
-    function switchPlayer() {
-        if (currentPlayer == playerOne) {
-            currentPlayer = playerTwo;
-        } else {
-            currentPlayer = playerOne;
-        }
-    }
-
-    resetTheGame();
-
-    return {
-        checkForPlay: listenForPlay,
-    }
-})();
-*/
