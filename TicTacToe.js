@@ -107,6 +107,12 @@ const gameController = (() => {
             } else {
                 _stopListeningForPlayerMove();
             }
+        } else if (_checkForDraw(array)) {
+            if (confirm('It\'s a draw. Restart the game?')) {
+                resetTheGame();
+            } else {
+                _stopListeningForPlayerMove();
+            }
         }
     }
 
@@ -143,6 +149,12 @@ const gameController = (() => {
         if (diagonalOne.every(mark => mark == _currentPlayer.marker || 
             diagonalTwo.every(mark => mark == _currentPlayer.marker))) {
                 return true;
+        }
+    }
+
+    function _checkForDraw(draw) {
+        if (draw.every(mark => mark !== '')) {
+            return true;
         }
     }
 
