@@ -113,8 +113,10 @@ const gameController = (() => {
             array.push(ele.textContent);
         })
         if (_checkRows(array) || _checkColumns(array) || _checkDiagonals(array)) {
+            _stopListeningForPlayerMove()
             return result = _currentPlayer.name + ' has won.';
         } else if (_checkForDraw(array)) {
+            _stopListeningForPlayerMove()
             return result = 'It\'s a draw.';
         }
     }
