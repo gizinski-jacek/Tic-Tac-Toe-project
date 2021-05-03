@@ -1,7 +1,10 @@
 "use strict"
 
-const gameboard = (() => {
+const game = (() => {
+    const displayResult = document.querySelector('#result');
+
     function createBoard() {
+        displayResult.textContent = '';
         const _board = Array.from({ length: 9 }, (x, i) => i);
         const _divGame = document.querySelector('#game');
         _divGame.innerHTML = '';
@@ -24,6 +27,7 @@ const gameboard = (() => {
 
     return {
         createBoard,
+        displayResult,
     }
 })();
 
@@ -41,7 +45,7 @@ const players = (() => {
 
     return {
         playerOne,
-        playerTwo
+        playerTwo,
     }
 })();
 
@@ -56,14 +60,21 @@ const gameController = (() => {
         board.forEach((cell) => {
             cell.addEventListener('click', () => {
                 if (_markCell(cell)) {
-                    _checkForWinner(board);
-                    _switchPlayer();
+                    if (_checkForWinner(board)) {
+                        game.displayResult.textContent = result;
+                    } else {
+                        _switchPlayer();
+                        playerAI.makeMoveAI(board, _currentPlayer);
+                        if (_checkForWinner(board)) {
+                            game.displayResult.textContent = result;
+                        } else {
+                            _switchPlayer();
+                        }
+                    }
                 }
             })
         });
     }
-
-    _playerMoveListeners();
 
     /* Removes attached event listeners without clearing the board.
     Will probably get obsolete when I make decent CSS styling, animations and UI.
@@ -102,17 +113,9 @@ const gameController = (() => {
             array.push(ele.textContent);
         })
         if (_checkRows(array) || _checkColumns(array) || _checkDiagonals(array)) {
-            if (confirm(_currentPlayer.name + ' has won. Restart the game?')) {
-                resetTheGame();
-            } else {
-                _stopListeningForPlayerMove();
-            }
+            return result = _currentPlayer.name + ' has won.';
         } else if (_checkForDraw(array)) {
-            if (confirm('It\'s a draw. Restart the game?')) {
-                resetTheGame();
-            } else {
-                _stopListeningForPlayerMove();
-            }
+            return result = 'It\'s a draw.';
         }
     }
 
@@ -160,11 +163,30 @@ const gameController = (() => {
 
     // Self-explanatory (or not?).
     function resetTheGame() {
-        gameboard.createBoard();
+        game.createBoard();
         _playerMoveListeners();
     }
     
+    _playerMoveListeners();
+
     return {
         resetTheGame,
+    }
+})();
+
+
+
+const playerAI = (() => {
+    function makeMoveAI(board, currentPlayer) {
+        let i = 2;
+        while (!board[i].textContent == '') {
+            i = Math.floor(Math.random() * board.length)
+        }
+        board[i].textContent = currentPlayer.marker;
+        board[i].style.color = currentPlayer.color;
+    }
+
+    return {
+        makeMoveAI,
     }
 })();
