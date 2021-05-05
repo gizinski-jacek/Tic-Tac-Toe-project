@@ -180,10 +180,10 @@ const gameController = (() => {
 
 const playerAI = (() => {
     function makeMoveAI(board, currentPlayer) {
-        let i = 2;
-        while (!board[i].textContent == '') {
-            i = Math.floor(Math.random() * board.length)
-        }
+        let i;
+        do {
+            i = Math.floor(Math.random() * board.length);
+        } while (!board[i].textContent == '')
         board[i].textContent = currentPlayer.marker;
         board[i].style.color = currentPlayer.color;
     }
