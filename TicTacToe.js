@@ -1,10 +1,10 @@
 "use strict"
 
 const game = (() => {
-    const displayResult = document.querySelector('#result');
+    const displayWinner = document.querySelector('#winner');
 
     function createBoard() {
-        displayResult.textContent = '';
+        displayWinner.textContent = 'Score';
         const _board = Array.from({ length: 9 }, (x, i) => i);
         const _divGame = document.querySelector('#game');
         _divGame.innerHTML = '';
@@ -18,16 +18,16 @@ const game = (() => {
         }
     }
 
-    const resetGame = document.querySelector('#reset');
-    resetGame.addEventListener('click', () => {
-        gameController.resetTheGame();
+    const restartGame = document.querySelector('#restart');
+    restartGame.addEventListener('click', () => {
+        gameController.restartTheGame();
     })
 
     createBoard();
 
     return {
         createBoard,
-        displayResult,
+        displayWinner,
     }
 })();
 
@@ -43,6 +43,11 @@ const players = (() => {
     const playerOne = new CreatePlayer('Player X', 'Red', 'X');
     const playerTwo = new CreatePlayer('Player O', 'Blue', 'O');
 
+    document.querySelector('form').reset()
+    document.querySelector('#playerName').addEventListener('change', (e) => {
+        playerOne.name = e.target.value;
+    })
+
     return {
         playerOne,
         playerTwo,
@@ -53,6 +58,7 @@ const players = (() => {
 
 const gameController = (() => {
     let _currentPlayer = players.playerOne;
+    let result;
 
     // Listens for any click on the board.
     function _playerMoveListeners() {
@@ -61,15 +67,14 @@ const gameController = (() => {
             cell.addEventListener('click', () => {
                 if (_markCell(cell)) {
                     if (_checkForWinner(board)) {
-                        game.displayResult.textContent = result;
+                        game.displayWinner.textContent = result;
                     } else {
                         _switchPlayer();
                         playerAI.makeMoveAI(board, _currentPlayer);
                         if (_checkForWinner(board)) {
-                            game.displayResult.textContent = result;
-                        } else {
-                            _switchPlayer();
+                            game.displayWinner.textContent = result;
                         }
+                        _switchPlayer();
                     }
                 }
             })
@@ -164,7 +169,7 @@ const gameController = (() => {
     }
 
     // Self-explanatory (or not?).
-    function resetTheGame() {
+    function restartTheGame() {
         game.createBoard();
         _playerMoveListeners();
     }
@@ -172,7 +177,7 @@ const gameController = (() => {
     _playerMoveListeners();
 
     return {
-        resetTheGame,
+        restartTheGame,
     }
 })();
 
